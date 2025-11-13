@@ -1,0 +1,31 @@
+{
+	"name": "@monitext/devtools",
+	"private": true,
+	"version": "0.0.0",
+	"description": "MoniText internal build and config utilities.",
+	"exports": {
+		"./builder": {
+			"types": "./dist/builder/main.d.ts",
+			"import": "./dist/builder/main.js",
+			"default": "./dist/builder/main.cjs"
+		},
+		"./tsconfig.json": "./tsconfig.json"
+	},
+	"scripts": {
+		"build": "pnpm run build:builder",
+		"build:builder": "tsup ./src/builder/main.ts --format esm,cjs --dts --outDir ./dist/builder"
+	},
+	"keywords": [],
+	"author": "ctlinker",
+	"license": "Apache-2.0",
+	"packageManager": "pnpm@10.14.0",
+	"dependencies": {
+		"esbuild": "^0.27.0",
+		"tsup": "^8.5.1",
+		"typescript": "^5.9.3"
+	},
+	"devDependencies": {
+		"@types/node": "^22.0.0"
+	}
+}
+
