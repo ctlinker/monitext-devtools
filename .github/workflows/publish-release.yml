@@ -1,0 +1,52 @@
+name: Build and attach artifacts on release
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-attach:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js and pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          node-version: '18'
+          # optional: pin pnpm-version: '8'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build
+        run: pnpm run build --if-present
+
+      - name: Prepare artifact directory
+        run: |
+          set -e
+          mkdir -p artifacts
+          if [ -d "dist" ]; then
+            cp -r dist artifacts/
+          else
+            echo "Error: dist folder not found. Check your build output or build script." >&2
+            exit 1
+          fi
+          tar -czf artifacts/${{ github.ref_name }}-dist.tar.gz -C artifacts .
+
+      - name: Upload workflow artifact (keeps a copy in the run)
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-${{ github.ref_name }}
+          path: artifacts/${{ github.ref_name }}-dist.tar.gz
+
+      - name: Attach artifact to GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: artifacts/${{ github.ref_name }}-dist.tar.gz
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
